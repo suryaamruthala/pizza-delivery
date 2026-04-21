@@ -1,0 +1,96 @@
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
+export default function Register() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { register } = useAuth();
+  const navigate = useNavigate();
+
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (password !== confirm) return setError("Passwords don't match");
+    if (password.length < 6) return setError('Password must be at least 6 characters');
+    setLoading(true); setError('');
+    try {
+      await register(name, email, password);
+      setSuccess(true);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'linear-gradient(135deg, #fff8f0 0%, var(--surface) 50%, #fff0f2 100%)' }}>
+      <div style={{ width: '100%', maxWidth: 460, padding: '0 1rem', animation: 'fadeInUp 0.4s ease' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🍕</div>
+          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
+            Join <span style={{ background: 'var(--primary-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>SliceStream</span>
+          </h1>
+          <p style={{ color: 'var(--on-surface-variant)', marginTop: '0.5rem' }}>Create an account to start ordering</p>
+        </div>
+
+        <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius-xl)', padding: '2.25rem', boxShadow: 'var(--shadow-warm)', border: '1px solid var(--surface-container-high)' }}>
+          {success ? (
+            <div style={{ textAlign: 'center', padding: '1rem' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem', color: '#10b981' }}>✉️</div>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>Check your inbox!</h2>
+              <p style={{ color: 'var(--on-surface-variant)' }}>We have sent a verification link to <strong>{email}</strong>. Please click the link to verify your account before logging in.</p>
+              <button 
+                onClick={() => navigate('/login')} 
+                className="btn btn-primary" 
+                style={{ marginTop: '1.5rem', width: '100%' }}
+              >
+                Go to Login
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem', fontSize: '0.9375rem' }}>Full Name</label>
+                <input id="name-input" type="text" value={name} onChange={e => setName(e.target.value)}
+                  className="input" placeholder="John Doe" required />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem', fontSize: '0.9375rem' }}>Email</label>
+                <input id="email-input" type="email" value={email} onChange={e => setEmail(e.target.value)}
+                  className="input" placeholder="you@example.com" required />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem', fontSize: '0.9375rem' }}>Password</label>
+                <input id="password-input" type="password" value={password} onChange={e => setPassword(e.target.value)}
+                  className="input" placeholder="Min. 6 characters" required />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontWeight: 600, marginBottom: '0.5rem', fontSize: '0.9375rem' }}>Confirm Password</label>
+                <input id="confirm-input" type="password" value={confirm} onChange={e => setConfirm(e.target.value)}
+                  className="input" placeholder="Repeat password" required />
+              </div>
+              {error && (
+                <div style={{ background: 'rgba(190,45,6,0.08)', border: '1px solid rgba(190,45,6,0.2)', borderRadius: 'var(--radius-md)', padding: '0.875rem', color: 'var(--error)', fontSize: '0.9rem', fontWeight: 500 }}>
+                  {error}
+                </div>
+              )}
+              <button id="register-btn" type="submit" className="btn btn-primary btn-lg w-full" disabled={loading} style={{ marginTop: '0.5rem', opacity: loading ? 0.7 : 1 }}>
+                {loading ? <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><span className="spinner spinner-sm" style={{ borderColor: 'rgba(255,255,255,0.3)', borderTopColor: '#fff' }} />Creating account…</span> : 'Create Account'}
+              </button>
+            </form>
+          )}
+        </div>
+
+        <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--on-surface-variant)', fontSize: '0.9375rem' }}>
+          Already have an account?{' '}
+          <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 700, textDecoration: 'none' }}>Sign in →</Link>
+        </p>
+      </div>
+    </div>
+  );
+}
